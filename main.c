@@ -10,6 +10,13 @@
 
 ISR(TIMER0_OVF_vect);
 ISR(TIMER0_COMPA_vect);
+ISR(USART1_RX_vect);
+ISR(USART1_UDRE_vect);
+void USART_Init(unsigned long);
+char USART_RxChar();
+void USART_TxChar(char);
+void USART_SendString(char*);
+
 
 void PlayNote(unsigned char invFrequencySet, int setNumCycles);
 void rest(int setNumCycles);
@@ -17,6 +24,8 @@ void rest(int setNumCycles);
 void keyBoardNote(unsigned char invFrequencySet, int setNumCycles);
 
 void OcarinaMode();
+void KeyBoardGameMode();
+void ShufflePlay();
 
 int eponasSong(char notes[]);
 int songOfStorms(char notes[]);
@@ -27,21 +36,30 @@ int notePlaying;
 
 int t0Used;
 unsigned char currInvFrequency;
+unsigned char value;
+
+unsigned char song1[9] = "ABCAABCA";
+unsigned char song2[7] = "ECDECD";
+unsigned char song3[8] = "EDCDEEE";
+unsigned char selectedSong[10];
 
 
 int main(void)
 {
     DDRC = 0xFF;
-	DDRD = 0xFF;
+	DDRD = 0xFB;
 	DDRE = 0xFF;
 	
 	DDRA = 0x00;
 	PORTA = 0xFF;
 	
 	PORTE = 0x20;
+	USART_Init(9600);
 	t0Used = 0;
+	sei();
     while (1) 
     {
+		value = USART_RxChar(); //have to monitor what the value of this is, and add some if statements to chage what mode its in baised off of this
 		PORTD = PINA;
 		if (PINA == 0xFE)
 		{
@@ -57,6 +75,7 @@ int main(void)
 		}
 		if (PINA == 0xF7)
 		{
+			USART_SendString("Twinkle Twinkle Little Star")
 			PlayNote(120, 1000); //Low C, quarter
 			rest(100);
 			PlayNote(120, 1000);
@@ -73,6 +92,7 @@ int main(void)
 		}
 		if (PINA == 0xEF)
 		{
+			USART_SendString("Dunno the name of this one")
 			PlayNote(71, 563);  //A, triplet
 			PlayNote(67, 597);	//B flat, triplet
 			PlayNote(63, 635);	//B, triplet
@@ -229,6 +249,7 @@ void OcarinaMode()
 		if (PINA == 0x7F)
 		{
 			while(PINA == 0x7f) {PORTD = PINA;}
+			KeyBoardGameMode();
 			return;
 		}
 		if (eponasSong(notes))
@@ -325,6 +346,120 @@ ISR(TIMER0_OVF_vect)
 		TCNT0 = -currInvFrequency;
 	}
 }
+void selsong()
+{
+	 int x=rand();
+	 if (x%3==1)
+	 {
+		 selectedSong=song1;
+		 USART_SendString(selectedSong)
+	 }
+	 else if (x%3==2)
+	 {
+		 selectedSong=song2;
+		 USART_SendString(selectedSong)
+	 }
+	 else
+	 {
+		 selectedSong=song3;
+		 USART_SendString(selectedSong)
+	 }
+	 return
+}
+void KeyBoardGameMode()
+{
+ selsong();
+ unsigned char currentnotes[10];
+ int count =0;
+ while (1)
+ {
+	 value = USART_RxChar();
+	 PORTD = PINA;
+	 if (PINA == 0xFE)
+	 {
+		 PlayNote(120, 10); //C
+		 currentnotes[count]='C';
+		 currentnotes[count+1]='\0';
+		 count++;
+		 
+	 }
+	 if (PINA == 0xFD)
+	 {
+		 PlayNote(63, 10); //B
+		 currentnotes[count]='C';
+		 currentnotes[count+1]='\0';
+		 count++;
+		 
+	 }
+	 if (PINA == 0xFB)
+	 {
+		 PlayNote(71, 10); //A
+		 currentnotes[count]='C';
+		 currentnotes[count+1]='\0';
+		 count++;
+		 
+	 }
+	 if (PINA == 0xF7)
+	 {
+		 PlayNote(71, 10); //G
+		 currentnotes[count]='C';
+		 currentnotes[count+1]='\0';
+		 count++;
+		 
+	 }
+	 if (PINA == 0xEF)
+	 {
+		 PlayNote(71, 10); //F
+		 currentnotes[count]='C';
+		 currentnotes[count+1]='\0';
+		 count++;
+		 
+	 }
+	 if (PINA == 0xDF)
+	 {
+		PlayNote(71, 10); //E
+		currentnotes[count]='C';
+		currentnotes[count+1]='\0';
+		count++;
+		
+	 }
+	 if (PINA == 0x7F)
+	 {
+		PlayNote(71, 10); //D
+		currentnotes[count]='C';
+		currentnotes[count+1]='\0';
+		count++;
+		
+	 }
+	 if(PINA == )
+	 {
+		 PlayNote(120, 10); //C
+		 currentnotes[count]='C';
+		 currentnotes[count+1]='\0';
+		 count++;
+		 
+	 }
+	 if()//button on port e is pushed
+	 {
+		main();
+		return; 
+	 }
+	 if(strcmp(currentnotes,selectedSong))//current note string equals song
+	 {
+		 USART_SendString("Success!");
+		 selsong();
+		 currentnotes = "";
+		 count =0;
+	 }
+	 if(strlen(currentnotes)>strlen(selectedSong)// current note list is longer than the goal reset it
+	 {
+		  USART_SendString("Try Again");
+		  currentnotes = "";
+		  count =0;
+	 }
+ }	
+}
+
 
 ISR(TIMER0_COMPA_vect)
 {
@@ -332,5 +467,48 @@ ISR(TIMER0_COMPA_vect)
 	if (notePlaying)
 	{
 		PORTE ^= 0x10;
+	}
+}
+
+ISR(USART1_RX_vect)
+{
+	value = UDR1;
+}
+
+ISR(USART1_UDRE_vect)
+{
+	UDR1 = 'x'
+}
+
+void USART_Init(unsigned long BAUDRATE)
+{
+	int BAUD_PRESCALE = (((F_CPU/(BAUDRATE *16UL)))-1);
+	UCSR1B |= (1<<RXEN)|(1<<TXEN);
+	UCSR1C |= (1<<UCSZ0)|(1<<UCSZ1);	
+	UBRR1L=BAUD_PRESCALE;
+	UBRR1H=(BAUD_PRESCALE>>8)
+}
+
+char USART_RxChar()
+{
+	if((UCSR1A&(1<<RXC)))
+		return(UDR1);
+	else
+		return '\0'
+}
+
+void USART_TxChar(char data)
+{
+	UDR1 =data;
+	while(!(UCSR1A &(1<<UDRE)));
+}
+
+void USART_SendString(char *str)
+{
+	int i=0;
+	while (str[i]!=0)
+	{
+		USART_TxChar(str[i]);
+		i++;
 	}
 }
