@@ -7,6 +7,11 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define F_CPU 16000000UL                    // fosc = 16 MHz
 
 ISR(TIMER0_OVF_vect);
 ISR(TIMER0_COMPA_vect);
@@ -38,17 +43,18 @@ int t0Used;
 unsigned char currInvFrequency;
 unsigned char value;
 
-unsigned char song1[9] = "ABCAABCA";
-unsigned char song2[7] = "ECDECD";
-unsigned char song3[8] = "EDCDEEE";
-unsigned char selectedSong[10];
+char song1[9] = "ABCAABCA";
+char song2[7] = "ECDECD";
+char song3[8] = "EDCDEEE";
+char selectedSong[10];
 
 
 int main(void)
 {
     DDRC = 0xFF;
 	DDRD = 0xFB;
-	DDRE = 0xFF;
+	DDRE = 0x20;
+	PORTE = 0xDF;
 	
 	DDRA = 0x00;
 	PORTA = 0xFF;
@@ -75,7 +81,7 @@ int main(void)
 		}
 		if (PINA == 0xF7)
 		{
-			USART_SendString("Twinkle Twinkle Little Star")
+			USART_SendString("Twinkle Twinkle Little Star");
 			PlayNote(120, 1000); //Low C, quarter
 			rest(100);
 			PlayNote(120, 1000);
@@ -92,7 +98,7 @@ int main(void)
 		}
 		if (PINA == 0xEF)
 		{
-			USART_SendString("Dunno the name of this one")
+			USART_SendString("Dunno the name of this one");
 			PlayNote(71, 563);  //A, triplet
 			PlayNote(67, 597);	//B flat, triplet
 			PlayNote(63, 635);	//B, triplet
@@ -351,25 +357,25 @@ void selsong()
 	 int x=rand();
 	 if (x%3==1)
 	 {
-		 selectedSong=song1;
-		 USART_SendString(selectedSong)
+		 memcpy(selectedSong, song1, sizeof(song1));
+		 USART_SendString(selectedSong);
 	 }
 	 else if (x%3==2)
 	 {
-		 selectedSong=song2;
-		 USART_SendString(selectedSong)
+		 memcpy(selectedSong, song2, sizeof(song2));
+		 USART_SendString(selectedSong);
 	 }
 	 else
 	 {
-		 selectedSong=song3;
-		 USART_SendString(selectedSong)
+		 memcpy(selectedSong, song3, sizeof(song3));
+		 USART_SendString(selectedSong);
 	 }
-	 return
+	 return;
 }
 void KeyBoardGameMode()
 {
  selsong();
- unsigned char currentnotes[10];
+ char currentnotes[10];
  int count =0;
  while (1)
  {
@@ -423,7 +429,7 @@ void KeyBoardGameMode()
 		count++;
 		
 	 }
-	 if (PINA == 0x7F)
+	 if (PINA == 0xBF) //Alex: I am assuming that this was supposed to be a BF so that the button would constantly increase
 	 {
 		PlayNote(71, 10); //D
 		currentnotes[count]='C';
@@ -431,7 +437,7 @@ void KeyBoardGameMode()
 		count++;
 		
 	 }
-	 if(PINA == )
+	 if(PINA == 0x7F)
 	 {
 		 PlayNote(120, 10); //C
 		 currentnotes[count]='C';
@@ -439,22 +445,22 @@ void KeyBoardGameMode()
 		 count++;
 		 
 	 }
-	 if()//button on port e is pushed
+	 if(PINE == 0xBF)//button on port e is pushed
 	 {
-		main();
+		//don't need to call main, return will exit this function then ocarinaMode, going back to main anyway
 		return; 
 	 }
 	 if(strcmp(currentnotes,selectedSong))//current note string equals song
 	 {
 		 USART_SendString("Success!");
 		 selsong();
-		 currentnotes = "";
+		 memcpy(selectedSong, "", sizeof(""));
 		 count =0;
 	 }
-	 if(strlen(currentnotes)>strlen(selectedSong)// current note list is longer than the goal reset it
+	 if(strlen(currentnotes)>strlen(selectedSong))// current note list is longer than the goal reset it
 	 {
 		  USART_SendString("Try Again");
-		  currentnotes = "";
+		  memcpy(selectedSong, "", sizeof(""));
 		  count =0;
 	 }
  }	
@@ -477,7 +483,7 @@ ISR(USART1_RX_vect)
 
 ISR(USART1_UDRE_vect)
 {
-	UDR1 = 'x'
+	UDR1 = 'x';
 }
 
 void USART_Init(unsigned long BAUDRATE)
@@ -486,7 +492,7 @@ void USART_Init(unsigned long BAUDRATE)
 	UCSR1B |= (1<<RXEN)|(1<<TXEN);
 	UCSR1C |= (1<<UCSZ0)|(1<<UCSZ1);	
 	UBRR1L=BAUD_PRESCALE;
-	UBRR1H=(BAUD_PRESCALE>>8)
+	UBRR1H=(BAUD_PRESCALE>>8);
 }
 
 char USART_RxChar()
@@ -494,7 +500,7 @@ char USART_RxChar()
 	if((UCSR1A&(1<<RXC)))
 		return(UDR1);
 	else
-		return '\0'
+		return '\0';
 }
 
 void USART_TxChar(char data)
