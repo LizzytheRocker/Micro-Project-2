@@ -35,6 +35,11 @@ void ShufflePlay();
 int eponasSong(char notes[]);
 int songOfStorms(char notes[]);
 
+void PlaySong1();
+void PlaySong2();
+void PlayEponasSong()
+void PlaySongOfStorms();
+
 long numCycles;
 long maxCycles;
 int notePlaying;
@@ -81,28 +86,11 @@ int main(void)
 		}
 		if (PINA == 0xF7)
 		{
-			USART_SendString("Twinkle Twinkle Little Star");
-			PlayNote(120, 1000); //Low C, quarter
-			rest(100);
-			PlayNote(120, 1000);
-			rest(100);
-			PlayNote(80, 1500); //G, quarter
-			rest(100);
-			PlayNote(80, 1500);
-			rest(100);
-			PlayNote(72, 1667); //A, quarter
-			rest(100);
-			PlayNote(72, 1667);
-			rest(100);
-			PlayNote(80, 3000); //G, half
+			PlaySong1();
 		}
 		if (PINA == 0xEF)
 		{
-			USART_SendString("Dunno the name of this one");
-			PlayNote(71, 563);  //A, triplet
-			PlayNote(67, 597);	//B flat, triplet
-			PlayNote(63, 635);	//B, triplet
-			PlayNote(60, 2000);	//C, half note
+			PlaySong2();
 		}
 		if (PINA == 0xDF)
 		{
@@ -260,53 +248,12 @@ void OcarinaMode()
 		}
 		if (eponasSong(notes))
 		{
-			rest(1200);
-			PlayNote(71, 563);
-			PlayNote(67, 597);
-			PlayNote(63, 635);
-			PlayNote(60, 2000);
-			
-			rest(2400);
-			
-			PlayNote(53, 1132);	//high D, eighth
-			PlayNote(63, 952);	//B, eighth
-			PlayNote(71, 3380);	//A, half
-			PlayNote(53, 1132);
-			PlayNote(63, 952);
-			PlayNote(71, 3380);
-			
-			PlayNote(53, 1132);
-			PlayNote(63, 952);
-			PlayNote(71, 1690);	//A, quarter
-			PlayNote(63, 1905);	//B, quarter
-			PlayNote(71, 5070);	//A, dotted half
+			PlayEponasSong();
 			notes[0] = 0;
 		}
 		if (songOfStorms(notes))
 		{
-			rest(1200);
-			PlayNote(71, 563);
-			PlayNote(67, 597);
-			PlayNote(63, 635);
-			PlayNote(60, 2000);
-			
-			rest(2400);
-			
-			PlayNote(106, 377);	//low D, eighth
-			PlayNote(90, 444);	//F, eighth
-			PlayNote(53, 3019);	//high D, half
-			PlayNote(106, 377);
-			PlayNote(90, 444);
-			PlayNote(53, 3019);
-			
-			PlayNote(47, 1277);	//high E, quarter, shortened
-			rest(600);	//eighth rest, lenghtened to account for shortened not above
-			PlayNote(45, 889);	//high F, eighth
-			PlayNote(47, 851);	//high E, eighth
-			PlayNote(45, 889);
-			PlayNote(47, 851);
-			PlayNote(60, 667);	//high C, eighth
-			PlayNote(71, 2254);	//A, half
+			PlaySongOfStorms();
 			notes[0] = 0;
 		}
 	}
@@ -517,4 +464,116 @@ void USART_SendString(char *str)
 		USART_TxChar(str[i]);
 		i++;
 	}
+}
+
+void PlaySong1()
+{
+	USART_SendString("Twinkle Twinkle Little Star");
+	PlayNote(120, 1000); //Low C, quarter
+	rest(100);
+	PlayNote(120, 1000);
+	rest(100);
+	PlayNote(80, 1500); //G, quarter
+	rest(100);
+	PlayNote(80, 1500);
+	rest(100);
+	PlayNote(72, 1667); //A, quarter
+	rest(100);
+	PlayNote(72, 1667);
+	rest(100);
+	PlayNote(80, 3000); //G, half
+	
+	return;
+}
+
+void PlaySong2()
+{
+	USART_SendString("Dunno the name of this one");
+	PlayNote(71, 563);  //A, triplet
+	PlayNote(67, 597);	//B flat, triplet
+	PlayNote(63, 635);	//B, triplet
+	PlayNote(60, 2000);	//C, half note
+	
+	return;
+}
+
+void PlayEponasSong()
+{
+	USART_SendString("Epona's Song");
+	rest(1200);
+	PlayNote(71, 563);
+	PlayNote(67, 597);
+	PlayNote(63, 635);
+	PlayNote(60, 2000);
+	
+	rest(2400);
+	
+	PlayNote(53, 1132);	//high D, eighth
+	PlayNote(63, 952);	//B, eighth
+	PlayNote(71, 3380);	//A, half
+	PlayNote(53, 1132);
+	PlayNote(63, 952);
+	PlayNote(71, 3380);
+	
+	PlayNote(53, 1132);
+	PlayNote(63, 952);
+	PlayNote(71, 1690);	//A, quarter
+	PlayNote(63, 1905);	//B, quarter
+	PlayNote(71, 5070);	//A, dotted half
+	
+	return;
+}
+
+void PlaySongOfStorms()
+{
+	USART_SendString("Song of Storms");
+	rest(1200);
+	PlayNote(71, 563);
+	PlayNote(67, 597);
+	PlayNote(63, 635);
+	PlayNote(60, 2000);
+	
+	rest(2400);
+	
+	PlayNote(106, 377);	//low D, eighth
+	PlayNote(90, 444);	//F, eighth
+	PlayNote(53, 3019);	//high D, half
+	PlayNote(106, 377);
+	PlayNote(90, 444);
+	PlayNote(53, 3019);
+	
+	PlayNote(47, 1277);	//high E, quarter, shortened
+	rest(600);	//eighth rest, lenghtened to account for shortened not above
+	PlayNote(45, 889);	//high F, eighth
+	PlayNote(47, 851);	//high E, eighth
+	PlayNote(45, 889);
+	PlayNote(47, 851);
+	PlayNote(60, 667);	//high C, eighth
+	PlayNote(71, 2254);	//A, half
+	
+	return;
+}
+
+void ShufflePlay()
+{
+	int x= rand();
+	
+	if (x % 4 == 0)
+	{
+		PlaySong1();
+	}
+	else if(x % 4 == 1)
+	{
+		PlaySong2();
+	}
+	else if (x % 4 == 2)
+	{
+		PlayEponasSong();
+	}
+	else
+	{
+		PlaySongOfStorms();
+	}
+	
+	return;
 }
