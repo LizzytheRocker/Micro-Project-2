@@ -37,7 +37,7 @@ int songOfStorms(char notes[]);
 
 void PlaySong1();
 void PlaySong2();
-void PlayEponasSong()
+void PlayEponasSong();
 void PlaySongOfStorms();
 
 long numCycles;
