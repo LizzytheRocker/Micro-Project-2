@@ -45,7 +45,7 @@ long numCycles;
 long maxCycles;
 int notePlaying;
 
-int t0Used;
+int KeyBoardOn;
 unsigned char currInvFrequency;
 unsigned char value;
 
@@ -67,26 +67,26 @@ int main(void)
 	
 	PORTE = 0x20;
 	USART_Init(9600);
-	t0Used = 0;
 	sei();
 	USART_SendString("Welcome. Type the number of the mode you want to go to. \n 1)Ocarina \n2)Music Game \n3)Shuffle Play \n4)Octave Keyboard \n");
     while (1) 
     {
+		KeyBoardOn = 0;
 		value = USART_RxChar(); //have to monitor what the value of this is, and add some if statements to change what mode its in based off of this
-		PORTD = PINA;
-		if (value=="1")
+		PORTD = 0xFF;
+		if (value == 49)
 		{
 			OcarinaMode();
 		}
-		if(value == "2")
+		if(value == 50)
 		{
 			KeyBoardGameMode();
 		} 
-		if(value == "3")
+		if(value == 51)
 		{
 			ShufflePlay();
 		}
-		if(value == "4")
+		if(value == 52)
 		{
 			OctaveKeyboard();
 		}
@@ -108,7 +108,7 @@ int main(void)
 		}
 		if (PINA == 0xEF)
 		{
-			PlaySong2();
+			PlayEponasSong();
 		}
 		if (PINA == 0xDF)
 		{
@@ -116,12 +116,18 @@ int main(void)
 		}
 		if (PINA == 0xBF)
 		{
+			while(PINA == 0xBF);
 			ShufflePlay();
 		}
 		if (PINA == 0x7F)
 		{
 			while (PINA == 0x7F) {PORTD = PINA;}
 			OcarinaMode();
+		}
+		if (~PINE & 0x40)
+		{
+			while(~PINE & 0x40);
+			KeyBoardGameMode();
 		}
     }
 }
@@ -139,7 +145,48 @@ void PlayNote(unsigned char invFrequency, int setNumCycles)
 	TIMSK0 = 0x01;
 	
 	sei();
-	while(numCycles < maxCycles) {PORTD ^=0x80;};
+	while(numCycles < maxCycles)
+	{
+		if ((PINA == 0xDF) && !KeyBoardOn)
+		{
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			OctaveKeyboard();
+		}
+		if ((PINA == 0xBF) && !KeyBoardOn)
+		{
+			while(PINA == 0xBF);
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			ShufflePlay();
+		}
+		if ((PINA == 0x7F) && !KeyBoardOn)
+		{
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			while (PINA == 0x7F) {PORTD = PINA;}
+			OcarinaMode();
+		}
+		if (~PINE & 0x40)
+		{
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			while(~PINE & 0x40);
+			KeyBoardGameMode();
+		}
+	};
 	cli();
 	
 	TCCR0A = 0x00;
@@ -161,7 +208,47 @@ void rest(int setNumCycles)
 	TIMSK0 = 0x01;
 	
 	sei();
-	while(numCycles < maxCycles) {PORTD = PINA;};
+	while(numCycles < maxCycles)
+	{
+		if (PINA == 0xDF)
+		{
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			OctaveKeyboard();
+		}
+		if (PINA == 0xBF)
+		{
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			ShufflePlay();
+		}
+		if (PINA == 0x7F)
+		{
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			while (PINA == 0x7F) {PORTD = PINA;}
+			OcarinaMode();
+		}
+		if (~PINE & 0x40)
+		{
+			cli();
+			
+			TCCR0A = 0x00;
+			TCCR0B = 0x00;
+			TIMSK0 = 0x00;
+			while(~PINE & 0x40);
+			KeyBoardGameMode();
+		}
+	};
 	cli();
 	
 	TCCR0A = 0x00;
@@ -172,25 +259,26 @@ void rest(int setNumCycles)
 
 void OcarinaMode()
 {
+	KeyBoardOn = 0;
 	char notes[6] = {0};
-	USART_SendString("Type the number of the mode you want to go to. \n 1)Main \n2)Music Game \n3)Shuffle Play \n4)Octave Keyboard");
+	USART_SendString("Type the number of the mode you want to go to. \n 1)Main \n2)Music Game \n3)Shuffle Play \n4)Octave Keyboard\n");
 	while(1)
 	{
 		value = USART_RxChar();
-		PORTD = PINA;
-		if (value=="1")
+		PORTD = 0xFF;
+		if (value==49)
 		{
 			main();
 		}
-		if(value == "2")
+		if(value == 50)
 		{
 			KeyBoardGameMode();
 		}
-		if(value == "3")
+		if(value == 51)
 		{
 			ShufflePlay();
 		}
-		if(value == "4")
+		if(value == 52)
 		{
 			OctaveKeyboard();
 		}
@@ -261,9 +349,9 @@ void OcarinaMode()
 		}
 		if (PINA == 0x7F)
 		{
-			while(PINA == 0x7f) {PORTD = PINA;}
-			KeyBoardGameMode();
-			return;
+			while(PINA == 0x7f) {}
+			//KeyBoardGameMode();
+			main();
 		}
 		if (eponasSong(notes))
 		{
@@ -342,27 +430,28 @@ void KeyBoardGameMode()
 {
  DDRD = 0xFB;
  PORTD = 0xFF;
+ KeyBoardOn = 1;
+ USART_SendString("Type the number of the mode you want to go to. \n 1)OcarinaMode \n2)Main \n3)Shuffle Play \n4)Octave Keyboard\n");
  selsong();
  char currentnotes[10];
  int count =0;
- USART_SendString("Type the number of the mode you want to go to. \n 1)Main \n2)Music Game \n3)Shuffle Play \n4)Octave Keyboard");
  while (1)
  {
 	 value = USART_RxChar();
-	 PORTD = PINA;
-	 if (value=="1")
+	 PORTD = 0xFF;
+	 if (value==49)
+	 {
+		 OcarinaMode();
+	 }
+	 if(value == 50)
 	 {
 		 main();
 	 }
-	 if(value == "2")
-	 {
-		 KeyBoardGameMode();
-	 }
-	 if(value == "3")
+	 if(value == 51)
 	 {
 		 ShufflePlay();
 	 }
-	 if(value == "4")
+	 if(value == 52)
 	 {
 		 OctaveKeyboard();
 	 }
@@ -434,6 +523,8 @@ void KeyBoardGameMode()
 	 if(~PINE & 0x40)//button on port e is pushed
 	 {
 		//don't need to call main, return will exit this function then ocarinaMode, going back to main anyway
+		while(~PINE & 0x40);
+		main();
 		return; 
 	 }
 	 if(!strcmp(currentnotes,selectedSong))//current note string equals song
@@ -469,7 +560,7 @@ ISR(USART1_RX_vect)
 
 ISR(USART1_UDRE_vect)
 {
-	UDR1 = "";
+	UDR1 = 0;
 }
 
 void USART_Init(unsigned long BAUDRATE)
@@ -595,6 +686,7 @@ void PlaySongOfStorms()
 
 void ShufflePlay()
 {
+	KeyBoardOn = 0;
 	int x= rand();
 	
 	if (x % 4 == 0)
@@ -619,8 +711,28 @@ void ShufflePlay()
 
 void OctaveKeyboard()
 {
+	KeyBoardOn = 0;
+	USART_SendString("Type the number of the mode you want to go to. \n 1)OcarinaMode \n2)Music Game \n3)Shuffle Play \n4)Main\n");
 	while (1)
 	{
+		value = USART_RxChar();
+		PORTD = 0xFF;
+		if (value==49)
+		{
+			OcarinaMode();
+		}
+		if(value == 50)
+		{
+			KeyBoardGameMode();
+		}
+		if(value == 51)
+		{
+			ShufflePlay();
+		}
+		if(value == 52)
+		{
+			main();
+		}
 		if (~PINA & 0x01)
 		{
 			if (~PINA & 0x20)
@@ -669,6 +781,7 @@ void OctaveKeyboard()
 		else if (PINA == 0xF7)
 		{
 			while(PINA == 0xF7);
+			main();
 			return;
 		}
 	}
