@@ -49,7 +49,7 @@ unsigned char currInvFrequency;
 unsigned char value;
 
 char song1[9] = "ABCAABCA";
-char song2[7] = "ECDECD";
+char song2[7] = "EDCEDC";
 char song3[8] = "EDCDEEE";
 char selectedSong[10];
 
@@ -68,10 +68,27 @@ int main(void)
 	USART_Init(9600);
 	t0Used = 0;
 	sei();
+	USART_SendString("Welcome. Type the number of the mode you want to go to. \n 1)Ocarina \n2)Music Game \n3)Shuffle Play \n4)Octave Keyboard \n");
     while (1) 
     {
-		value = USART_RxChar(); //have to monitor what the value of this is, and add some if statements to chage what mode its in baised off of this
+		value = USART_RxChar(); //have to monitor what the value of this is, and add some if statements to change what mode its in based off of this
 		PORTD = PINA;
+		if (value=="1")
+		{
+			OcarinaMode();
+		}
+		if(value == "2")
+		{
+			KeyBoardGameMode();
+		} 
+		if(value == "3")
+		{
+			ShufflePlay();
+		}
+		if(value == "4")
+		{
+			OctaveKeyboard();
+		}
 		if (PINA == 0xFE)
 		{
 			PlayNote(120, 10);
@@ -176,9 +193,27 @@ void rest(int setNumCycles)
 void OcarinaMode()
 {
 	char notes[6] = {0};
+	USART_SendString("Type the number of the mode you want to go to. \n 1)Main \n2)Music Game \n3)Shuffle Play \n4)Octave Keyboard");
 	while(1)
 	{
+		value = USART_RxChar();
 		PORTD = PINA;
+		if (value=="1")
+		{
+			main();
+		}
+		if(value == "2")
+		{
+			KeyBoardGameMode();
+		}
+		if(value == "3")
+		{
+			ShufflePlay();
+		}
+		if(value == "4")
+		{
+			OctaveKeyboard();
+		}
 		if (PINA == 0xFE)
 		{
 			for (int i = 4; i >= 0; i--)
@@ -330,9 +365,27 @@ void KeyBoardGameMode()
  selsong();
  char currentnotes[10];
  int count =0;
+ USART_SendString("Type the number of the mode you want to go to. \n 1)Main \n2)Music Game \n3)Shuffle Play \n4)Octave Keyboard");
  while (1)
  {
 	 value = USART_RxChar();
+	 PORTD = PINA;
+	 if (value=="1")
+	 {
+		 main();
+	 }
+	 if(value == "2")
+	 {
+		 KeyBoardGameMode();
+	 }
+	 if(value == "3")
+	 {
+		 ShufflePlay();
+	 }
+	 if(value == "4")
+	 {
+		 OctaveKeyboard();
+	 }
 	 if (PINA == 0xFE)
 	 {
 		 while(PINA == 0xFE) {PlayNote(120, 10);}; //C
@@ -344,7 +397,7 @@ void KeyBoardGameMode()
 	 }
 	 if (PINA == 0xFD)
 	 {
-		 while(PINA == 0xFD) {PlayNote(120, 10);}; //B
+		 while(PINA == 0xFD) {PlayNote(127, 10);}; //B
 		 currentnotes[count]='B';
 		 currentnotes[count+1]='\0';
 		 count++;
@@ -352,7 +405,7 @@ void KeyBoardGameMode()
 	 }
 	 if (PINA == 0xFB)
 	 {
-		 while(PINA == 0xFB) {PlayNote(120, 10);}; //A
+		 while(PINA == 0xFB) {PlayNote(142, 10);}; //A
 		 currentnotes[count]='A';
 		 currentnotes[count+1]='\0';
 		 count++;
@@ -360,7 +413,7 @@ void KeyBoardGameMode()
 	 }
 	 if (PINA == 0xF7)
 	 {
-		 while(PINA == 0xF7) {PlayNote(120, 10);}; //G
+		 while(PINA == 0xF7) {PlayNote(159, 10);}; //G
 		 currentnotes[count]='G';
 		 currentnotes[count+1]='\0';
 		 count++;
@@ -368,7 +421,7 @@ void KeyBoardGameMode()
 	 }
 	 if (PINA == 0xEF)
 	 {
-		 while(PINA == 0xEF) {PlayNote(120, 10);}; //F
+		 while(PINA == 0xEF) {PlayNote(179, 10);}; //F
 		 currentnotes[count]='F';
 		 currentnotes[count+1]='\0';
 		 count++;
@@ -376,7 +429,7 @@ void KeyBoardGameMode()
 	 }
 	 if (PINA == 0xDF)
 	 {
-		 while(PINA == 0xDF) {PlayNote(120, 10);}; //E
+		 while(PINA == 0xDF) {PlayNote(190, 10);}; //E
 		currentnotes[count]='E';
 		currentnotes[count+1]='\0';
 		count++;
@@ -384,7 +437,7 @@ void KeyBoardGameMode()
 	 }
 	 if (PINA == 0xBF) //Alex: I am assuming that this was supposed to be a BF so that the button would constantly increase
 	 {
-		 while(PINA == 0xBF) {PlayNote(120, 10);}; //D
+		 while(PINA == 0xBF) {PlayNote(213, 10);}; //D
 		currentnotes[count]='D';
 		currentnotes[count+1]='\0';
 		count++;
@@ -392,7 +445,7 @@ void KeyBoardGameMode()
 	 }
 	 if(PINA == 0x7F)
 	 {
-		 while(PINA == 0x7F) {PlayNote(120, 10);}; //C
+		 while(PINA == 0x7F) {PlayNote(239, 10);}; //C
 		 currentnotes[count]='C';
 		 currentnotes[count+1]='\0';
 		 count++;
@@ -405,14 +458,14 @@ void KeyBoardGameMode()
 	 }
 	 if(!strcmp(currentnotes,selectedSong))//current note string equals song
 	 {
-		 USART_SendString("Success!");
+		 USART_SendString("\nSuccess!\n");
 		 selsong();
 		 memcpy(currentnotes, "", sizeof(""));
 		 count =0;
 	 }
 	 if(strlen(currentnotes)>strlen(selectedSong))// current note list is longer than the goal reset it
 	 {
-		  USART_SendString("Try Again");
+		  USART_SendString("\nTry Again\n");
 		  memcpy(currentnotes, "", sizeof(""));
 		  count =0;
 	 }
@@ -436,7 +489,7 @@ ISR(USART1_RX_vect)
 
 ISR(USART1_UDRE_vect)
 {
-	UDR1 = 'x';
+	UDR1 = "";
 }
 
 void USART_Init(unsigned long BAUDRATE)
@@ -474,7 +527,7 @@ void USART_SendString(char *str)
 
 void PlaySong1()
 {
-	USART_SendString("Twinkle Twinkle Little Star");
+	USART_SendString("Twinkle Twinkle Little Star/n");
 	PlayNote(120, 1000); //Low C, quarter
 	rest(100);
 	PlayNote(120, 1000);
@@ -494,7 +547,7 @@ void PlaySong1()
 
 void PlaySong2()
 {
-	USART_SendString("Dunno the name of this one");
+	USART_SendString("Zelda Item Jingle\n");
 	PlayNote(71, 563);  //A, triplet
 	PlayNote(67, 597);	//B flat, triplet
 	PlayNote(63, 635);	//B, triplet
@@ -505,7 +558,7 @@ void PlaySong2()
 
 void PlayEponasSong()
 {
-	USART_SendString("Epona's Song");
+	USART_SendString("Epona's Song \n");
 	rest(1200);
 	PlayNote(71, 563);
 	PlayNote(67, 597);
@@ -532,7 +585,7 @@ void PlayEponasSong()
 
 void PlaySongOfStorms()
 {
-	USART_SendString("Song of Storms");
+	USART_SendString("Song of Storms \n");
 	rest(1200);
 	PlayNote(71, 563);
 	PlayNote(67, 597);
