@@ -58,7 +58,7 @@ int main(void)
 {
     DDRC = 0xFF;
 	DDRD = 0xFB;
-	DDRE = 0x20;
+	DDRE = 0x30;
 	PORTE = 0xDF;
 	
 	DDRA = 0x00;
@@ -117,6 +117,10 @@ int main(void)
 			TIMSK0 = 0x00;
 			t0Used = 0;
 		}
+		if (PINA == 0xBF)
+		{
+			ShufflePlay();
+		}
 		if (PINA == 0x7F)
 		{
 			while (PINA == 0x7F) {PORTD = PINA;}
@@ -138,7 +142,7 @@ void PlayNote(unsigned char invFrequency, int setNumCycles)
 	TIMSK0 = 0x01;
 	
 	sei();
-	while(numCycles < maxCycles) {PORTD = PINA;};
+	while(numCycles < maxCycles) {PORTD ^=0x80;};
 	cli();
 	
 	TCCR0A = 0x00;
@@ -321,16 +325,18 @@ void selsong()
 }
 void KeyBoardGameMode()
 {
+ DDRD = 0xFB;
+ PORTD = 0xFF;
  selsong();
  char currentnotes[10];
  int count =0;
  while (1)
  {
 	 value = USART_RxChar();
-	 PORTD = PINA;
 	 if (PINA == 0xFE)
 	 {
-		 PlayNote(120, 10); //C
+		 while(PINA == 0xFE) {PlayNote(120, 10);}; //C
+		 //PlayNote(120, 10); //C
 		 currentnotes[count]='C';
 		 currentnotes[count+1]='\0';
 		 count++;
@@ -338,76 +344,76 @@ void KeyBoardGameMode()
 	 }
 	 if (PINA == 0xFD)
 	 {
-		 PlayNote(63, 10); //B
-		 currentnotes[count]='C';
+		 while(PINA == 0xFD) {PlayNote(120, 10);}; //B
+		 currentnotes[count]='B';
 		 currentnotes[count+1]='\0';
 		 count++;
 		 
 	 }
 	 if (PINA == 0xFB)
 	 {
-		 PlayNote(71, 10); //A
-		 currentnotes[count]='C';
+		 while(PINA == 0xFB) {PlayNote(120, 10);}; //A
+		 currentnotes[count]='A';
 		 currentnotes[count+1]='\0';
 		 count++;
 		 
 	 }
 	 if (PINA == 0xF7)
 	 {
-		 PlayNote(71, 10); //G
-		 currentnotes[count]='C';
+		 while(PINA == 0xF7) {PlayNote(120, 10);}; //G
+		 currentnotes[count]='G';
 		 currentnotes[count+1]='\0';
 		 count++;
 		 
 	 }
 	 if (PINA == 0xEF)
 	 {
-		 PlayNote(71, 10); //F
-		 currentnotes[count]='C';
+		 while(PINA == 0xEF) {PlayNote(120, 10);}; //F
+		 currentnotes[count]='F';
 		 currentnotes[count+1]='\0';
 		 count++;
 		 
 	 }
 	 if (PINA == 0xDF)
 	 {
-		PlayNote(71, 10); //E
-		currentnotes[count]='C';
+		 while(PINA == 0xDF) {PlayNote(120, 10);}; //E
+		currentnotes[count]='E';
 		currentnotes[count+1]='\0';
 		count++;
 		
 	 }
 	 if (PINA == 0xBF) //Alex: I am assuming that this was supposed to be a BF so that the button would constantly increase
 	 {
-		PlayNote(71, 10); //D
-		currentnotes[count]='C';
+		 while(PINA == 0xBF) {PlayNote(120, 10);}; //D
+		currentnotes[count]='D';
 		currentnotes[count+1]='\0';
 		count++;
 		
 	 }
 	 if(PINA == 0x7F)
 	 {
-		 PlayNote(120, 10); //C
+		 while(PINA == 0x7F) {PlayNote(120, 10);}; //C
 		 currentnotes[count]='C';
 		 currentnotes[count+1]='\0';
 		 count++;
 		 
 	 }
-	 if(PINE == 0xBF)//button on port e is pushed
+	 if(~PINE & 0x40)//button on port e is pushed
 	 {
 		//don't need to call main, return will exit this function then ocarinaMode, going back to main anyway
 		return; 
 	 }
-	 if(strcmp(currentnotes,selectedSong))//current note string equals song
+	 if(!strcmp(currentnotes,selectedSong))//current note string equals song
 	 {
 		 USART_SendString("Success!");
 		 selsong();
-		 memcpy(selectedSong, "", sizeof(""));
+		 memcpy(currentnotes, "", sizeof(""));
 		 count =0;
 	 }
 	 if(strlen(currentnotes)>strlen(selectedSong))// current note list is longer than the goal reset it
 	 {
 		  USART_SendString("Try Again");
-		  memcpy(selectedSong, "", sizeof(""));
+		  memcpy(currentnotes, "", sizeof(""));
 		  count =0;
 	 }
  }	
